@@ -5,8 +5,10 @@ API_KEYS.txt
 *.key
 *.pem
 
-# Office temporary lock files
+# Office documents & temporary lock files
 ~$*
+*.docx
+*.doc
 
 # Scratch directory
 scratch/
