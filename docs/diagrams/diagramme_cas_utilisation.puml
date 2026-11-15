@@ -1,0 +1,82 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing true
+skinparam roundcorner 10
+skinparam actorStyle awesome
+
+skinparam usecase {
+    BackgroundColor #FFFFFF
+    BorderColor #2B6CB0
+    ArrowColor #2D3748
+}
+
+skinparam actor {
+    BackgroundColor #EDF2F7
+    BorderColor #2B6CB0
+}
+
+actor "Candidat" as Candidat #4299E1
+actor "Recruteur" as Recruteur #ED8936
+actor "Administrateur" as Admin #805AD5
+actor "Moteur IA / LLM\n(Service Externe)" as MoteurIA #48BB78
+
+rectangle "Plateforme HireSmart AI" {
+
+    package "Authentification & Sécurité" {
+        usecase "S'authentifier (JWT)" as UC_Auth
+        usecase "Réinitialiser mot de passe (SMTP)" as UC_ResetPass
+        usecase "Changer son mot de passe" as UC_ChangePass
+    }
+
+    package "Espace Candidat" {
+        usecase "Gérer son profil professionnel" as UC_Profile
+        usecase "Téléverser / Remplacer son CV\n(PDF, Word, TXT, RTF, ODT)" as UC_UploadCV
+        usecase "Consulter et rechercher des offres" as UC_BrowseJobs
+        usecase "Postuler à une offre d'emploi" as UC_Apply
+        usecase "Suivre l'état de ses candidatures" as UC_TrackApps
+    }
+
+    package "Espace Recruteur" {
+        usecase "Publier et gérer les offres d'emploi" as UC_ManageJobs
+        usecase "Consulter les candidatures reçues" as UC_ViewApps
+        usecase "Évaluer une candidature via IA" as UC_EvaluateAI
+        usecase "Consulter l'explication du score (XAI)" as UC_XAI
+        usecase "Mettre à jour le statut du candidat" as UC_UpdateStatus
+    }
+
+    package "Administration & Gouvernance" {
+        usecase "Gérer les utilisateurs et leurs rôles" as UC_ManageUsers
+        usecase "Gérer le référentiel des compétences" as UC_ManageSkills
+        usecase "Configurer les paramètres système" as UC_ConfigSys
+        usecase "Consulter le journal d'audit et la télémétrie" as UC_AuditTelemetry
+    }
+}
+
+Candidat --> UC_Auth
+Candidat --> UC_ResetPass
+Candidat --> UC_ChangePass
+Candidat --> UC_Profile
+Candidat --> UC_UploadCV
+Candidat --> UC_BrowseJobs
+Candidat --> UC_Apply
+Candidat --> UC_TrackApps
+
+Recruteur --> UC_Auth
+Recruteur --> UC_ResetPass
+Recruteur --> UC_ChangePass
+Recruteur --> UC_ManageJobs
+Recruteur --> UC_ViewApps
+Recruteur --> UC_EvaluateAI
+Recruteur --> UC_UpdateStatus
+
+Admin --> UC_Auth
+Admin --> UC_ManageUsers
+Admin --> UC_ManageSkills
+Admin --> UC_ConfigSys
+Admin --> UC_AuditTelemetry
+
+UC_Apply ..> UC_UploadCV : <<include>>
+UC_EvaluateAI ..> UC_XAI : <<include>>
+UC_EvaluateAI ..> MoteurIA : <<sollicite>>
+@enduml

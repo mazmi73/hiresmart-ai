@@ -1,0 +1,31 @@
+# Environment secrets & API keys
+.env
+.env.local
+API_KEYS.txt
+*.key
+*.pem
+
+# Office temporary lock files
+~$*
+
+# Scratch directory
+scratch/
+
+# Backend build artifacts
+backend/target/
+backend/.mvn/
+backend/*.log
+backend/uploads/
+
+# Frontend dependencies and bundles
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/*.log
+
+# IDE & OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

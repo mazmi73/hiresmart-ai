@@ -1,0 +1,45 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam shadowing true
+skinparam roundcorner 8
+skinparam linetype ortho
+
+skinparam node {
+    BackgroundColor #FFFFFF
+    BorderColor #2B6CB0
+}
+
+package "1. Couche Présentation (Frontend)" #EBF8FF {
+    node "Navigateur Web (Utilisateur)" as Browser
+    node "Angular 17+ & Tailwind CSS\n[SPA sous Nginx - Port 4200]" as AngularApp
+    Browser <--> AngularApp : HTTP / JSON
+}
+
+package "2. Couche Métier & Services (Backend)" #F0FFF4 {
+    node "API REST Spring Boot 3\n[Java 21 - Port 8080]" as Backend
+    node "Spring Security & JWT\n[RBAC: Candidate, Recruiter, Admin]" as Security
+    node "Analyseur Documentaire\n[Apache PDFBox & Parsers TXT/Word]" as Parser
+    
+    AngularApp <--> Backend : Requêtes REST (JSON / JWT)
+    Backend ..> Security : Valide les requêtes
+    Backend ..> Parser : Extrait le texte des CV
+}
+
+package "3. Couche Persistance & Moteurs d'IA" #FFF5F5 {
+    database "Base de Données\nPostgreSQL 16\n[Migrations Flyway - Port 5432]" as DB
+    
+    node "Moteurs d'IA Hybrides (XAI)" as AIEngines {
+        node "Google Gemini (2.5/1.5 Flash)" as Gemini
+        node "GroqCloud (Llama 3.3 70B)" as Groq
+        node "Mistral AI / OpenRouter" as Mistral
+        node "Ollama (LLM Local)" as Ollama
+        node "Moteur Local Déterministe\n[Fallback sans panne]" as Fallback
+    }
+    
+    node "Serveur SMTP Mailtrap\n[Réinitialisation Mot de Passe]" as Mailtrap
+
+    Backend <--> DB : Spring Data JPA / JDBC
+    Backend <--> AIEngines : Évaluation sémantique & XAI
+    Backend --> Mailtrap : Envoi e-mails
+}
+@enduml

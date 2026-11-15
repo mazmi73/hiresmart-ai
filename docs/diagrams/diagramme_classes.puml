@@ -1,0 +1,199 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam monochrome false
+skinparam shadowing true
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam roundcorner 8
+
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #2D3748
+    ArrowColor #2D3748
+}
+
+package "Authentification & Profils" #EBF8FF {
+    enum Role {
+        CANDIDATE
+        RECRUITER
+        ADMIN
+    }
+
+    class User {
+        - Long id
+        - String email
+        - String password
+        - Role role
+        - LocalDateTime createdAt
+        - LocalDateTime updatedAt
+        + boolean hasRole(Role role)
+    }
+
+    class CandidateProfile {
+        - Long id
+        - String firstName
+        - String lastName
+        - String phone
+        - String title
+        - String education
+        - String experienceSummary
+        - String skills
+        + String getFullName()
+    }
+
+    class RecruiterProfile {
+        - Long id
+        - String companyName
+        - String companyWebsite
+        - String industry
+        - String location
+    }
+
+    class PasswordResetToken {
+        - Long id
+        - String token
+        - LocalDateTime expiryDate
+        - boolean used
+        - LocalDateTime createdAt
+        + boolean isExpired()
+    }
+
+    User "1" *-- "1" Role
+    User "1" o-- "0..1" CandidateProfile : possède
+    User "1" o-- "0..1" RecruiterProfile : possède
+    User "1" *-- "0..*" PasswordResetToken : génère
+}
+
+package "Offres & Candidatures" #F0FFF4 {
+    enum JobStatus {
+        ACTIVE
+        CLOSED
+        DRAFT
+    }
+
+    enum EmploymentType {
+        FULL_TIME
+        PART_TIME
+        CONTRACT
+        INTERNSHIP
+    }
+
+    enum WorkplaceType {
+        ON_SITE
+        HYBRID
+        REMOTE
+    }
+
+    enum ApplicationStatus {
+        SUBMITTED
+        UNDER_REVIEW
+        SHORTLISTED
+        REJECTED
+        ACCEPTED
+    }
+
+    class JobOffer {
+        - Long id
+        - String title
+        - String description
+        - String department
+        - String location
+        - String requiredSkills
+        - JobStatus status
+        - EmploymentType employmentType
+        - WorkplaceType workplaceType
+        - LocalDateTime createdAt
+        - LocalDateTime updatedAt
+        + boolean isActive()
+    }
+
+    class Application {
+        - Long id
+        - ApplicationStatus status
+        - LocalDateTime appliedAt
+        - LocalDateTime updatedAt
+        + void updateStatus(ApplicationStatus newStatus)
+    }
+
+    JobOffer "1" *-- "1" JobStatus
+    JobOffer "1" *-- "1" EmploymentType
+    JobOffer "1" *-- "1" WorkplaceType
+
+    User "1" -- "0..*" JobOffer : "publie"
+    User "1" -- "0..*" Application : "postule"
+    JobOffer "1" -- "0..*" Application : "reçoit"
+    Application "1" *-- "1" ApplicationStatus
+}
+
+package "Gestion Documentaire & IA (XAI)" #FFF5F5 {
+    enum AiProvider {
+        GEMINI
+        GROQ
+        MISTRAL
+        OLLAMA
+        LOCAL
+    }
+
+    class CVDocument {
+        - Long id
+        - String originalFileName
+        - String fileName
+        - String filePath
+        - Long fileSize
+        - String contentType
+        - String extractedText
+        - LocalDateTime createdAt
+        + boolean isPdf()
+        + String getExtension()
+    }
+
+    class CVAnalysis {
+        - Long id
+        - Double overallScore
+        - Double skillsScore
+        - Double experienceScore
+        - Double educationScore
+        - String strengths
+        - String weaknesses
+        - String recommendation
+        - AiProvider aiEngineUsed
+        - Long executionTimeMs
+        - LocalDateTime createdAt
+        + boolean isRecommended()
+    }
+
+    User "1" -- "0..*" CVDocument : "téléverse"
+    Application "1" o-- "1" CVDocument : "utilise"
+    Application "1" *-- "0..1" CVAnalysis : "est évaluée par"
+    CVAnalysis "1" *-- "1" AiProvider
+}
+
+package "Gouvernance, Audit & Configuration" #FAF5FF {
+    class Skill {
+        - Long id
+        - String name
+        - String category
+        - Integer usageCount
+        - LocalDateTime createdAt
+    }
+
+    class SystemConfig {
+        - Long id
+        - String configKey
+        - String configValue
+        - String description
+        - LocalDateTime updatedAt
+    }
+
+    class AuditLog {
+        - Long id
+        - String action
+        - String targetResource
+        - String details
+        - String ipAddress
+        - LocalDateTime timestamp
+    }
+
+    User "1" -- "0..*" AuditLog : "déclenche"
+}
+@enduml

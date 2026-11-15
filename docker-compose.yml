@@ -1,0 +1,78 @@
+services:
+  database:
+    image: postgres:16-alpine
+    container_name: hiresmart-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hiresmart
+      POSTGRES_USER: ${POSTGRES_USER:-hiresmart_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hiresmart_pass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hiresmart_user} -d hiresmart"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    networks:
+      - hiresmart-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hiresmart-backend
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/hiresmart
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-hiresmart_user}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-hiresmart_pass}
+      JWT_SECRET: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      UPLOAD_DIR: /app/uploads/cvs
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST:-sandbox.smtp.mailtrap.io}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-2525}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME:-7879a042e0784a}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD:-f3b17fd833fbc3}
+    volumes:
+      - cv_uploads:/app/uploads/cvs
+    ports:
+      - "8080:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 25s
+    networks:
+      - hiresmart-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hiresmart-frontend
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - hiresmart-network
+
+volumes:
+  postgres_data:
+    name: hiresmart_postgres_data
+  cv_uploads:
+    name: hiresmart_cv_uploads
+
+networks:
+  hiresmart-network:
+    name: hiresmart-network
+    driver: bridge
